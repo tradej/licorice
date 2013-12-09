@@ -1,0 +1,8 @@
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the original work is
+properly attributed to %s
+Neither the name of %s  may be used to
+endorse or promote products derived from this software without
+specific prior written permission.
+This software is provided by %s "AS IS"
+and without any express or implied warranties.

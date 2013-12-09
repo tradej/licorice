@@ -1,0 +1,3 @@
+recursive-include licorice/data *
+
+recursive-exclude licorice __pycache__

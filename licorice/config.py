@@ -1,0 +1,2 @@
+
+DEFINITIONS_DIR = 'definitions'
