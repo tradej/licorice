@@ -22,17 +22,16 @@ def get_license_parser(path):
 
 ### GET PROJECT ###
 
-def get_project(path):
+def get_project(paths):
     project = None
     try:
-        project_path = helper.path(path)
-        logger.info("Loading project at {0}".format(project_path))
-
-        project = loaders.ProjectLoader.load_project(project_path)
+        logger.info("Loading project")
+        if isinstance(paths, str): paths = [paths]
+        project = loaders.ProjectLoader.load_project(list(map(helper.path, paths)))
         logger.info("Loading complete, {0} files loaded.".format(len(project.files)))
+        return project
     except IOError as e:
         logger.error("Loading project failed with this error: {0}".format(str(e)))
-    return project
 
 def get_projects_licenses(parser, filelist):
     licenses_found = set()
@@ -48,7 +47,7 @@ def get_projects_licenses(parser, filelist):
 def display_results(args, project):
     # Display results
     if args.list_files:
-        for pfile in reversed(project.files):
+        for pfile in project.files:
             if not pfile.licenses:
                 if not args.skip_unknown:
                     print('{}: UNKNOWN'.format(pfile.path))

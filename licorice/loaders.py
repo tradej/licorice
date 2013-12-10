@@ -9,23 +9,24 @@ from licorice.models import FileInProject, Project, License
 from licorice.parser import LicenseParser
 
 class ProjectLoader:
-    @classmethod
-    def load_project(cls, path):
+    @staticmethod
+    def load_project(destinations):
         '''Load contents of a software project - file, directory, archive
         :param path: Path where the project is to be found
         '''
         filelist = set()
-        if os.path.isdir(path):
-            filelist = ProjectLoader.load_directory(path)
-        elif ProjectLoader.is_archive(path):
-            filelist = ProjectLoader.load_archive(path)
-        elif os.path.isfile(path):
-            filelist.add(ProjectLoader.load_file(path))
-        else:
-            raise Exception('File type not supported: %s' % path)
+        for path in destinations:
+            if os.path.isdir(path):
+                filelist = ProjectLoader.load_directory(path)
+            elif ProjectLoader.is_archive(path):
+                filelist = ProjectLoader.load_archive(path)
+            elif os.path.isfile(path):
+                filelist.add(ProjectLoader.load_file(path))
+            else:
+                raise Exception('File type not supported: %s' % path)
 
-        return Project(os.path.basename(path), path, sorted(filelist,
-            key=lambda x: x.path, reverse=True))
+        return Project(os.path.basename(destinations[0]), sorted(filelist,
+            key=lambda x: x.path))
 
     @classmethod
     def load_directory(cls, path):
@@ -51,11 +52,11 @@ class ProjectLoader:
     @classmethod
     def load_file(cls, filename):
         '''Get a file
-        :param filename: Path to the file
+        :param filename: Full and expanded path to file
         '''
         if not os.path.isfile(filename):
             raise IOError("%s is not a file!" % filename)
-        return FileInProject(os.path.expandvars(filename))
+        return FileInProject(filename)
 
     @staticmethod
     def load_archive(path, tmpdir=''):

@@ -3,12 +3,8 @@
 import os
 import sys
 
-from licorice import get_datadir
-from licorice import argument
-from licorice import helper
-from licorice import logger
-from licorice import workflow
-from licorice import config
+from licorice import get_datadir, argument, helper, logger, workflow, config
+
 
 ### ENTRY POINT ###
 def run():

@@ -7,10 +7,9 @@ from licorice.helper import tokenize
 
 class Project:
     ''' Project holding all files and their licenses '''
-    def __init__(self, name, path, files):
+    def __init__(self, name, files):
         self.licenses = None
-        self.path = path
-        self.name = os.path.basename(os.path.splitext(path)[0])
+        self.name = name
         self.files = files
         self.license_file = None
 

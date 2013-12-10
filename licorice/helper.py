@@ -22,5 +22,8 @@ def get_files(path):
             result.append(os.path.abspath(f))
     return result
 
+def split_paths(paths):
+    return paths.split(' ')
+
 def path(path):
     return os.path.abspath(os.path.expandvars(path))
