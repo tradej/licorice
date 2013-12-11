@@ -3,7 +3,7 @@
 import os
 import sys
 
-from licorice import get_datadir, argument, helper, logger, workflow, config
+from licorice import get_dir, argument, helper, logger, workflow, config
 
 
 ### ENTRY POINT ###
@@ -13,7 +13,7 @@ def run():
 
     logger.print_splash() # Header output
 
-    parser = workflow.get_license_parser(get_datadir(config.DEFINITIONS_DIR))
+    parser = workflow.get_license_parser(get_dir(config.DEFINITIONS_DIR))
     project = workflow.get_project(args.file_list)
 
     project.licenses = workflow.get_projects_licenses(parser, project.files)
