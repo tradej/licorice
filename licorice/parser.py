@@ -1,22 +1,19 @@
 
 import itertools
-import logging
 import os
 import re
 from collections import defaultdict
 
+from licorice import logger
 from licorice.helper import tokenize
 from licorice.models import ForwardFileGenerator as FFG
 from licorice.models import BackwardFileGenerator as BFG
 
-LOGGER = logging.getLogger('licorice')
-
 class LicenseParser:
 
-    def __init__(self, licenses, keywords):
+    def __init__(self, keywords):
         '''License parsing class'''
-        self.licenses = licenses # List of License instances
-        self.license_locations = keywords # dict { keyword: [ licenses that contain it ] }
+        self.file_locations = keywords # dict { keyword: [ licenses that contain it ] }
         self._locations = dict()
 
     def get_licenses(self, path, verbose = False):
@@ -28,20 +25,22 @@ class LicenseParser:
             raise Exception("{} is not a file.".format(path))
 
         matches = list() # { (line number, word index): License }
-        keywords = self.license_locations.keys()
+        keywords = self.file_locations.keys()
         for word, line_number, word_index in FFG(path, 0, 0).get_words_with_coordinates():
             if word in keywords:
-                for license in self.license_locations[word]:
-                    if license in matches:
+                for f in self.file_locations[word]:
+                    logger.debug(f)
+                    if f.parent in matches:
                         continue
-                    if self._matches(path, license, line_number, word_index, word):
-                        matches.append(license)
+                    if self._matches(path, f, line_number, word_index, word):
+                        matches.append(f.parent)
 
         return list(sorted(matches, key=lambda l: l.name))
 
-    def _matches(self, file_path, license, line_number, word_index, keyword):
-        iterators = self._get_license_iterators(license, keyword)
-        for (word_pair) in itertools.zip_longest(FFG(file_path, line_number, word_index).get_words(), \
+    def _matches(self, file_path, license_file, line_number, word_index, keyword):
+        iterators = self._get_license_iterators(license_file, keyword)
+        for (word_pair) in itertools.zip_longest( \
+                FFG(file_path, line_number, word_index).get_words(), \
                 BFG(file_path, line_number, word_index+1).get_words()):
             if not iterators: return False
             for it_pair in iterators:
@@ -76,10 +75,9 @@ class LicenseParser:
 
         return bool(iterators)
 
-    def _get_license_iterators(self, license, word):
-        return [(license.cachedfile.iterator(pos), \
-            license.cachedfile.iterator(pos, backwards=True)) \
-            for pos in license.cachedfile.get_locations(word)]
+    def _get_license_iterators(self, cachedfile, word):
+        return [(cachedfile.iterator(loc), cachedfile.iterator(loc, backwards=True)) \
+                for loc in cachedfile.get_locations(word)]
 
 
     def load_main_license(project):

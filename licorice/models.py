@@ -25,23 +25,18 @@ class FileInProject:
         return self.extension in { '.bz2', '.gz', '.tar', '.jar', '.war', '.zip' }
 
 class License:
-    def __init__(self, name, path):
+    def __init__(self, name, config, files):
         self.name = name
-        self.description = None
-        self.path = path
-        self.is_free = False
-        self.copyleft = False
-        self.require_source = False
-        self.require_license_text = False
-        self.allow_redistribution = False
-        self.allow_commercial_use = False
-        self.cachedfile = CachedFile(self.path)
+        self.config = config
+        self.files = files
+        self.cachedfiles = [CachedFile(f, parent=self) for f in self.files]
 
 
 
 class CachedFile:
-    def __init__(self, path):
+    def __init__(self, path, parent=None):
         self.path = os.path.abspath(os.path.expandvars(path))
+        self.parent = parent
         self._lines = dict()
         self._locations = dict()
         self._iterators = dict()

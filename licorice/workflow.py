@@ -12,9 +12,8 @@ def get_license_parser(path):
     logger.info("Loading license definitions:")
     parser = None
     try:
-        parser = loaders.MainLicenseLoader().get_license_parser(path)
-        logger.info("{} licenses loaded.".format(len(parser.licenses)))
-        logger.debug('Keywords selected: {}'.format(' '.join(parser.license_locations.keys())))
+        parser = loaders.MainLicenseLoader().get_license_parser()
+        logger.debug('Keywords selected: {}'.format(' '.join(parser.file_locations.keys())))
     except OSError as e:
         logger.error("Loading licenses failed with this error: {0}".format(str(e)))
         sys.exit(1)

@@ -14,12 +14,12 @@ def search_score(no_of_locations, frequency):
         frequency '''
     return float(no_of_locations) ** 2 / frequency
 
-def get_files(path):
+def get_files(destination):
     ''' Get full paths of all regular files in given path and subdirectories '''
     result = list()
-    for root, dirs, files in os.walk(path(path)):
-        for f in [os.path.join(root, f) for f in files if os.path.isfile(os.path.join(root, f))]:
-            result.append(path(f))
+    for root, dirs, files in os.walk(path(destination)):
+        for f in [os.path.join(root, f) for f in files]:
+            result.append(f)
     return result
 
 def split_paths(paths):

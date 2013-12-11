@@ -1,10 +1,12 @@
 
+import configparser
 import os
 import re
+import itertools
 import subprocess
 from collections import defaultdict
 
-from licorice import helper
+from licorice import config, helper, get_dir, logger
 from licorice.models import FileInProject, Project, License
 from licorice.parser import LicenseParser
 
@@ -93,36 +95,54 @@ class ProjectLoader:
 
 class MainLicenseLoader:
 
-    def get_license_parser(self, path):
+    def get_license_parser(self):
         '''Get license parser with definitions obtained from a given directory
         :param path: License definitions directory
         '''
-        (licenses, keywords) = self.get_all_licenses_and_keywords(path)
-        return LicenseParser(licenses, keywords)
+        conf_path = helper.path(get_dir(config.METADATA_DIR))
+        text_path = helper.path(get_dir(config.DEFINITIONS_DIR))
+        (licenses, keywords) = self.get_all_licenses_and_keywords(conf_path, text_path)
+        logger.info('Loaded {} licenses'.format(len(licenses)))
+        return LicenseParser(keywords)
 
-    def get_all_licenses_and_keywords(self, path):
+    def get_all_licenses_and_keywords(self, conf_path, text_path):
         ''' Get a list of licenses and keywords to be searched.
             keywords is a dictionary in form
             { 'keyword' : [ its locations ] }
         '''
         words_occurrences = defaultdict(lambda: set())
         words_frequencies = defaultdict(lambda: 0)
-        licenses = list()
+        licenses = self._load_licenses_from_configs(helper.get_files(conf_path))
+        unconfigured_licenses = list( \
+                set(helper.get_files(text_path)).difference(\
+                set(itertools.chain(*[license.files for license in licenses]))))
+        licenses += self._load_licenses_from_texts(unconfigured_licenses)
 
-        for f in helper.get_files(path):
-            license = License(name=os.path.splitext(os.path.basename(f))[0], path=f)
-            words = SingleLicenseLoader.get_words_from_license(f)
-            self._merge_frequency_dicts(words_frequencies, words)
+        for lic in licenses:
+            for f in lic.cachedfiles:
+                words = SingleLicenseLoader.get_words_from_license(f)
+                self._merge_frequency_dicts(words_frequencies, words)
+                for word in words.keys():
+                    words_occurrences[word].add(f)
 
-            for word in words.keys():
-                words_occurrences[word].add(license)
-
-            licenses.append(license)
 
         keywords = dict((w, words_occurrences[w]) for w \
                 in self._select_keywords(words_frequencies, words_occurrences))
 
         return licenses, keywords
+
+    def _load_licenses_from_configs(self, filenames):
+        result = list()
+        for f in filenames:
+            result.append(LicenseMetadataLoader.load_license(f))
+        return result
+
+    def _load_licenses_from_texts(self, filenames):
+        result = list()
+        for f in filenames:
+            result.append(LicenseTextLoader.load_license(f))
+        return result
+
 
     def _merge_frequency_dicts(self, master, slave):
         # Expecting master to be an instance of defaultdict
@@ -148,15 +168,38 @@ class MainLicenseLoader:
 class SingleLicenseLoader:
 
     @classmethod
-    def get_words_from_license(cls, filename):
+    def get_words_from_license(cls, cachedfile):
         '''Get a dictionary of words and their frequencies from a license.
         Proper format: { 'word': frequency }
         :param filename: Path to the license file
         '''
         words = defaultdict(lambda: 0)
-        with open(filename, 'r') as license:
-            for line in license:
-                for token in helper.tokenize(line):
-                    if re.match(r'[a-z]+', token) and len(token) > 3:
-                        words[token] += 1
+        for word in cachedfile.iterator(0):
+            if re.match(r'[a-z]+', word) and len(word) > 3:
+                words[word] += 1
         return words
+
+class LicenseMetadataLoader:
+
+    @classmethod
+    def load_license(cls, path):
+        cfp = configparser.ConfigParser()
+        cfp.read_file(open(helper.path(path)))
+        #print(cfp.sections())
+        return License(cfp.get('Metadata', 'name'), True, \
+                cls._format_files(cfp.get('Metadata', 'files')))
+
+
+    @classmethod
+    def _format_files(cls, files):
+        prefix = get_dir(config.DEFINITIONS_DIR)
+        return [helper.path(os.path.join(prefix, f + '.txt')) \
+                for f in files.split(' ')]
+
+
+class LicenseTextLoader:
+
+    @classmethod
+    def load_license(cls, path):
+        name = str.upper(os.path.splitext(os.path.basename(path))[0])
+        return License(name, False, [path])
