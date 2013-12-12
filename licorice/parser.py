@@ -29,7 +29,6 @@ class LicenseParser:
         for word, line_number, word_index in FFG(path, 0, 0).get_words_with_coordinates():
             if word in keywords:
                 for f in self.file_locations[word]:
-                    logger.debug(f)
                     if f.parent in matches:
                         continue
                     if self._matches(path, f, line_number, word_index, word):
@@ -56,6 +55,9 @@ class LicenseParser:
                         try:
                             iword = iterator.next()
                             if iword == '%s':
+                                if word == iterator.peek():
+                                    iterator.next()
+                                    continue
                                 iterator.halt()
                                 iterator.newline_seen = False
                             elif word == iword:

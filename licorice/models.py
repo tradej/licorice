@@ -39,7 +39,6 @@ class CachedFile:
         self.parent = parent
         self._lines = dict()
         self._locations = dict()
-        self._iterators = dict()
         self._load_lines()
         self._wholetext = list(itertools.chain(*self._lines.values()))
         self.length = len(self._lines)
@@ -67,15 +66,8 @@ class CachedFile:
             self._cache_word_location(word)
         return self._locations[word]
 
-    def _cache_iterator(self, starting_position, backwards):
-        self._iterators[(starting_position, backwards)] = \
-            CachedFileIterator(self._wholetext, starting_position, backwards)
-
     def iterator(self, starting_position, backwards=False):
-        if (starting_position, backwards) not in self._iterators:
-            self._cache_iterator(starting_position, backwards)
-        self._iterators[(starting_position, backwards)].reset()
-        return self._iterators[(starting_position, backwards)]
+        return CachedFileIterator(self._wholetext, starting_position, backwards)
 
 class CachedFileIterator:
     def __init__(self, text, offset, backwards=False):
@@ -97,6 +89,14 @@ class CachedFileIterator:
         if not self._halted:
             self._offset += self._coefficient
         return result
+
+    def peek(self):
+        '''Look at the next item without advancing the pointer '''
+        pos = self._offset
+        if pos < 0 or pos >= len(self._text):
+            return None
+        else:
+            return self._text[pos]
 
     def next(self):
         return self.__next__()
