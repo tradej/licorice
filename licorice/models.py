@@ -147,8 +147,9 @@ class BackwardFileGenerator:
         while True: # needs to run once for line_number=0 too
             for word in self._load_buffer():
                 yield word
+            if self._buffer_start <= 0 and self._line_number <= 0: break
             self._line_number = self._buffer_start
-            if self._line_number <= 0: break
+            if self._line_number < 0: break
 
 
 
