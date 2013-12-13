@@ -1,7 +1,7 @@
-Permission to use, copy, modify, and distribute %s software and %s
+Permission to use, copy, modify, and distribute %WILD% software and %WILD%
 documentation for any purpose and without fee is hereby granted, provided
-that the above copyright notice %s in all copies and that both that
+that the above copyright notice %WILD% in all copies and that both that
 copyright notice and this permission notice appear in supporting
-documentation, and that the name of %s be used in advertising
+documentation, and that the name of %WILD% be used in advertising
 or publicity pertaining to distribution of the software without specific,
 written prior permission.

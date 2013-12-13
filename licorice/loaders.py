@@ -25,7 +25,7 @@ class ProjectLoader:
             elif os.path.isfile(path):
                 filelist.add(ProjectLoader.load_file(path))
             else:
-                raise Exception('File type not supported: %s' % path)
+                raise Exception('File type not supported: {}'.format(path))
 
         return Project(os.path.basename(destinations[0]), sorted(filelist,
             key=lambda x: x.path))
@@ -37,7 +37,7 @@ class ProjectLoader:
         '''
         filelist = set()
         if not os.path.isdir(path):
-            raise IOError("%s is not a directory!" % path)
+            raise IOError("{} is not a directory!".format(path))
         for root, dirs, files in os.walk(path):
             for filename in files:
                 full_path = os.path.join(root, filename)
@@ -48,7 +48,7 @@ class ProjectLoader:
                 elif os.path.isfile(full_path):
                     filelist.add(ProjectLoader.load_file(full_path))
                 else:
-                    pass #raise OSError('Filetype not supported: %s' % full_path)
+                    pass #raise OSError('Filetype not supported: {}'.format(full_path))
         return filelist
 
     @classmethod
@@ -57,7 +57,7 @@ class ProjectLoader:
         :param filename: Full and expanded path to file
         '''
         if not os.path.isfile(filename):
-            raise IOError("%s is not a file!" % filename)
+            raise IOError("{} is not a file!".format(filename))
         return FileInProject(filename)
 
     @staticmethod

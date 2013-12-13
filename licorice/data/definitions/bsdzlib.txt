@@ -1,5 +1,5 @@
 This program, "bzip2", the associated library "libbzip2", and all
-documentation, are copyright (C) %s.  All
+documentation, are copyright (C) %WILD%.  All
 rights reserved.
 
 Redistribution and use in source and binary forms, with or without

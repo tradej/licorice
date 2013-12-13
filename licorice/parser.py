@@ -54,7 +54,7 @@ class LicenseParser:
                     else:
                         try:
                             iword = iterator.next()
-                            if iword == '%s':
+                            if iword == '%WILD%':
                                 if word == iterator.peek():
                                     iterator.next()
                                     continue
