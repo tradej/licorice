@@ -4,7 +4,7 @@ import os
 import re
 from collections import defaultdict
 
-from licorice import logger
+from licorice import logger, config
 from licorice.helper import tokenize
 from licorice.models import ForwardFileGenerator as FFG
 from licorice.models import BackwardFileGenerator as BFG
@@ -27,6 +27,7 @@ class LicenseParser:
         matches = list() # { (line number, word index): License }
         keywords = self.file_locations.keys()
         for word, line_number, word_index in FFG(path, 0, 0).get_words_with_coordinates():
+            if line_number > config.LINE_LIMIT: break # limiting the portion of the file to be read
             if word in keywords:
                 for f in self.file_locations[word]:
                     if f.parent in matches:
@@ -54,7 +55,9 @@ class LicenseParser:
                     else:
                         try:
                             iword = iterator.next()
-                            if iword == '%WILD%':
+                            if 'bsd' in license_file.path:
+                                logger.debug('Matching {} : {}/{} (dir: {}) {}'.format(word, iword, iterator.peek(), direction, iterator))
+                            if iword == '%wild%':
                                 if word == iterator.peek():
                                     iterator.next()
                                     continue
@@ -74,6 +77,8 @@ class LicenseParser:
                 if False not in [it.finished for it in it_pair]: return True
                 if delete_pair:
                     iterators.remove(it_pair)
+                    if 'bsd' in license_file.path:
+                        logger.debug('Deleted {}'.format(it_pair))
 
         return bool(iterators)
 
