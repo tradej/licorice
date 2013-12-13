@@ -55,8 +55,8 @@ class LicenseParser:
                     else:
                         try:
                             iword = iterator.next()
-                            if 'bsd' in license_file.path:
-                                logger.debug('Matching {} : {}/{} (dir: {}) {}'.format(word, iword, iterator.peek(), direction, iterator))
+#                            if '' in license_file.path:
+#                                logger.debug('Matching {} : {}/{} (dir: {}) {}'.format(word, iword, iterator.peek(), direction, iterator))
                             if iword == '%wild%':
                                 if word == iterator.peek():
                                     iterator.next()
@@ -77,8 +77,8 @@ class LicenseParser:
                 if False not in [it.finished for it in it_pair]: return True
                 if delete_pair:
                     iterators.remove(it_pair)
-                    if 'bsd' in license_file.path:
-                        logger.debug('Deleted {}'.format(it_pair))
+#                    if '' in license_file.path:
+#                        logger.debug('Deleted {}'.format(it_pair))
 
         return bool(iterators)
 
