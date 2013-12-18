@@ -11,13 +11,15 @@ from licorice.models import BackwardFileGenerator as BFG
 
 class LicenseParser:
 
-    def __init__(self, keywords):
+    def __init__(self, keywords, licenses, vague=False):
         '''License parsing class'''
-        self.file_locations = keywords # dict { keyword: [ licenses that contain it ] }
+        self.file_locations = keywords # dict { keyword: [ license cachedfiles that contain it ] }
+        self.licenses_with_vague_words = [l for l in licenses if l.vague_words]
+        self.vague = vague
         self._locations = dict()
 
-    def get_licenses(self, path, verbose = False):
-        ''' Parse given file for present license definitions. Returns a list
+    def get_licenses(self, path):
+        '''Parse given file for present license definitions. Returns a list
             of found licenses '''
         if not os.path.exists(path):
             raise IOError("File does not exist.")
@@ -28,6 +30,12 @@ class LicenseParser:
         keywords = self.file_locations.keys()
         for word, line_number, word_index in FFG(path, 0, 0).get_words_with_coordinates():
             if line_number > config.LINE_LIMIT: break # limiting the portion of the file to be read
+
+            if self.vague:
+                for l in self.licenses_with_vague_words:
+                    if l not in matches and word in l.vague_words:
+                        matches.append(l)
+
             if word in keywords:
                 for f in self.file_locations[word]:
                     if f.parent in matches:
@@ -37,7 +45,9 @@ class LicenseParser:
 
         return list(sorted(matches, key=lambda l: l.name))
 
+
     def _matches(self, file_path, license_file, line_number, word_index, keyword):
+        '''Tell if the file on file_path matches the cachedfile'''
         iterators = self._get_license_iterators(license_file, keyword)
         for (word_pair) in itertools.zip_longest( \
                 FFG(file_path, line_number, word_index).get_words(), \

@@ -26,8 +26,8 @@ def construct_argparser():
                             action='store_true', help='print one license per line')
     arg_parser.add_argument('-u', '--skip-unknown', required=False,
                             action='store_true', help='when outputting, skip files with unknown licenses')
-#    arg_parser.add_argument('-s', '--strictness', required=False,
-#                            type=int, default=2, help='strictness of matching (from 1 to 3, default: 2)')
+    arg_parser.add_argument('-V', '--vague', required=False,
+                            action='store_true', help='use vague matching of popular licenses')
     arg_parser.add_argument('file_list', help='list of files to be processed', nargs='*')
     return arg_parser
 

@@ -8,11 +8,11 @@ from licorice import loaders
 
 ### GET LICENSE PARSER ###
 
-def get_license_parser(path):
+def get_license_parser(path, vague):
     logger.info("Loading license definitions:")
     parser = None
     try:
-        parser = loaders.MainLicenseLoader().get_license_parser()
+        parser = loaders.MainLicenseLoader().get_license_parser(vague)
         logger.debug('Keywords selected: {}'.format(' '.join(parser.file_locations.keys())))
     except OSError as e:
         logger.error("Loading licenses failed with this error: {0}".format(str(e)))
@@ -31,6 +31,7 @@ def get_project(paths):
         return project
     except IOError as e:
         logger.error("Loading project failed with this error: {0}".format(str(e)))
+        sys.exit(1)
 
 def get_projects_licenses(parser, filelist):
     licenses_found = set()
@@ -56,6 +57,4 @@ def display_results(args, project):
             else:
                 print('{}:'.format(pfile.path),
                     ' '.join(lic.name for lic in pfile.licenses))
-
-    else:
-        print(' '.join(sorted(x.name for x in project.licenses)))
+    print(' '.join(sorted(x.name for x in project.licenses)))

@@ -25,11 +25,12 @@ class FileInProject:
         return self.extension in { '.bz2', '.gz', '.tar', '.jar', '.war', '.zip' }
 
 class License:
-    def __init__(self, name, config, files):
+    def __init__(self, name, config, files, vague_words=list()):
         self.name = name
         self.config = config
         self.files = files
         self.cachedfiles = [CachedFile(f, parent=self) for f in self.files]
+        self.vague_words = vague_words
 
 
 

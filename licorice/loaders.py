@@ -95,7 +95,7 @@ class ProjectLoader:
 
 class MainLicenseLoader:
 
-    def get_license_parser(self):
+    def get_license_parser(self, vague=False):
         '''Get license parser with definitions obtained from a given directory
         :param path: License definitions directory
         '''
@@ -103,7 +103,7 @@ class MainLicenseLoader:
         text_path = helper.path(get_dir(config.DEFINITIONS_DIR))
         (licenses, keywords) = self.get_all_licenses_and_keywords(conf_path, text_path)
         logger.info('Loaded {} licenses'.format(len(licenses)))
-        return LicenseParser(keywords)
+        return LicenseParser(keywords, licenses, vague)
 
     def get_all_licenses_and_keywords(self, conf_path, text_path):
         ''' Get a list of licenses and keywords to be searched.
@@ -187,7 +187,8 @@ class LicenseMetadataLoader:
         cfp.read_file(open(helper.path(path)))
         #print(cfp.sections())
         return License(cfp.get('Metadata', 'name'), True, \
-                cls._format_files(cfp.get('Metadata', 'files')))
+                cls._format_files(cfp.get('Metadata', 'files')), \
+                cfp.get('Metadata', 'vague_words').split(' '))
 
 
     @classmethod
