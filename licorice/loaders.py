@@ -25,7 +25,7 @@ class ProjectLoader:
             elif os.path.isfile(path):
                 filelist.add(ProjectLoader.load_file(path))
             else:
-                raise Exception('File type not supported: {}'.format(path))
+                raise Exception('File does not exist or format not supported: {}'.format(path))
 
         return Project(os.path.basename(destinations[0]), sorted(filelist,
             key=lambda x: x.path))

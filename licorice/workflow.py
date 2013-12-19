@@ -1,5 +1,5 @@
 
-import os
+import os, sys
 
 from licorice import logger
 from licorice import helper
@@ -29,7 +29,7 @@ def get_project(paths):
         project = loaders.ProjectLoader.load_project(list(map(helper.path, paths)))
         logger.info("Loading complete, {0} files loaded.".format(len(project.files)))
         return project
-    except IOError as e:
+    except Exception as e:
         logger.error("Loading project failed with this error: {0}".format(str(e)))
         sys.exit(1)
 
