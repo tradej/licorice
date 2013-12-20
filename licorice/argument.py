@@ -28,6 +28,8 @@ def construct_argparser():
                             action='store_true', help='when outputting, skip files with unknown licenses')
     arg_parser.add_argument('-V', '--vague', required=False,
                             action='store_true', help='use vague matching of popular licenses')
+    arg_parser.add_argument('-F', '--fedora-naming', required=False,
+                            action='store_true', help='do not include commas between license names')
     arg_parser.add_argument('file_list', help='list of files to be processed', nargs='*')
     return arg_parser
 

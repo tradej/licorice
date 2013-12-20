@@ -46,15 +46,16 @@ def get_projects_licenses(parser, filelist):
 
 def display_results(args, project):
     # Display results
+    splitter = [', ', ' '][int(args.fedora_naming)]
     if args.list_files:
         for pfile in project.files:
             if not pfile.licenses:
                 if not args.skip_unknown:
                     print('{}: UNKNOWN'.format(pfile.path))
             elif args.one_line:
-                for lic in pfile.licenses:
+                for lic in sorted(pfile.licenses, key=lambda l: l.name):
                    print('{}: {}'.format(pfile.path, lic.name))
             else:
                 print('{}:'.format(pfile.path),
-                    ' '.join(lic.name for lic in pfile.licenses))
-    print(' '.join(sorted(x.name for x in project.licenses)))
+                        splitter.join(sorted(lic.name for lic in pfile.licenses)))
+    print(splitter.join(sorted(lic.name for lic in project.licenses)))
