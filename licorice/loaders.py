@@ -11,19 +11,21 @@ from licorice.models import FileInProject, Project, License
 from licorice.parser import LicenseParser
 
 class ProjectLoader:
-    @staticmethod
-    def load_project(destinations):
+    @classmethod
+    def load_project(cls, destinations):
         '''Load contents of a software project - file, directory, archive
         :param path: Path where the project is to be found
         '''
         filelist = set()
+        logger.debug('Loading {} files for analysis:'.format(len(destinations)))
         for path in destinations:
+            logger.debug('Loading {}'.format(path))
             if os.path.isdir(path):
-                filelist = ProjectLoader.load_directory(path)
-            elif ProjectLoader.is_archive(path):
-                filelist = ProjectLoader.load_archive(path)
+                filelist |= cls.load_directory(path)
+            elif cls.is_archive(path):
+                filelist |= cls.load_archive(path)
             elif os.path.isfile(path):
-                filelist.add(ProjectLoader.load_file(path))
+                filelist.add(cls.load_file(path))
             else:
                 raise Exception('File does not exist or format not supported: {}'.format(path))
 
@@ -38,17 +40,16 @@ class ProjectLoader:
         filelist = set()
         if not os.path.isdir(path):
             raise IOError("{} is not a directory!".format(path))
-        for root, dirs, files in os.walk(path):
-            for filename in files:
-                full_path = os.path.join(root, filename)
-                if os.path.isdir(full_path):
-                    filelist.union(ProjectLoader.load_directory(full_path))
-                elif ProjectLoader.is_archive(full_path):
-                    filelist.union(ProjectLoader.load_archive(full_path))
-                elif os.path.isfile(full_path):
-                    filelist.add(ProjectLoader.load_file(full_path))
-                else:
-                    pass #raise OSError('Filetype not supported: {}'.format(full_path))
+        for filename in helper.get_files(path):
+            logger.debug('Loading {}'.format(filename))
+            if os.path.isdir(filename):
+                filelist |= cls.load_directory(filename)
+            elif cls.is_archive(filename):
+                filelist |= cls.load_archive(filename)
+            elif os.path.isfile(filename):
+                filelist.add(cls.load_file(filename))
+            else:
+                logger.error('File does not exist or format not supported: {}'.format(filename))
         return filelist
 
     @classmethod
@@ -60,8 +61,8 @@ class ProjectLoader:
             raise IOError("{} is not a file!".format(filename))
         return FileInProject(filename)
 
-    @staticmethod
-    def load_archive(path, tmpdir=''):
+    @classmethod
+    def load_archive(cls, path, tmpdir=''):
         '''Get an archive. The archive is unpacked in the process
         :param path: Path to the archive
         :param tmpdir: Directory where to unpack the archive
