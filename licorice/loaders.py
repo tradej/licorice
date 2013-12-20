@@ -203,5 +203,7 @@ class LicenseTextLoader:
 
     @classmethod
     def load_license(cls, path):
-        name = str.upper(os.path.splitext(os.path.basename(path))[0])
+        name = os.path.splitext(os.path.basename(path))[0]
+        if name[0].islower():
+            name = name.title()
         return License(name, False, [path])
