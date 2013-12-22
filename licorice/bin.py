@@ -17,8 +17,11 @@ def run():
     project = workflow.get_project(args.file_list)
 
     project.licenses = workflow.get_projects_licenses(parser, project.files)
-
+    logger.debug('Found licenses: {}'.format(', '.join([l.name for l in project.licenses])))
     workflow.display_results(args, project)
+
+    if args.detect_problems:
+        workflow.detect_problems(project)
 
 ### MAIN ###
 if __name__ == '__main__':

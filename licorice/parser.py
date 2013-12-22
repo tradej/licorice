@@ -14,6 +14,7 @@ class LicenseParser:
     def __init__(self, keywords, licenses, vague=False):
         '''License parsing class'''
         self.file_locations = keywords # dict { keyword: [ license cachedfiles that contain it ] }
+        self.licenses = licenses
         self.licenses_with_vague_words = [l for l in licenses if l.vague_words]
         self.vague = vague
         self._locations = dict()

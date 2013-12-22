@@ -187,10 +187,31 @@ class LicenseMetadataLoader:
         cfp = configparser.ConfigParser()
         cfp.read_file(open(helper.path(path)))
         #print(cfp.sections())
-        return License(cfp.get('Metadata', 'name'), True, \
-                cls._format_files(cfp.get('Metadata', 'files')), \
-                cfp.get('Metadata', 'vague_words').split(' '))
+        return License(
+                cfp.get('Metadata', 'name'),\
+                True,\
+                cls._format_files(cfp.get('Metadata', 'files')),\
+                cfp.get('Metadata', 'vague_words').split(' '),\
+                cls._get_section(cfp, 'Freedoms'),\
+                cls._get_section(cfp, 'Obligations'),\
+                cls._get_section(cfp, 'Restrictions'),\
+                cls._get_section(cfp, 'Compatibility'),\
+                cfp.get('Metadata', 'short_name'))
 
+    @classmethod
+    def _get_section(cls, parser, section_name):
+        result = dict()
+        if parser.has_section(section_name):
+            for (item, value) in parser.items(section_name):
+                result[item] = cls._parse_value(value)
+        return result
+
+    @classmethod
+    def _parse_value(cls, value):
+        if   value == 'y': return True
+        elif value == 'n': return False
+        elif value == '':  return None
+        else:              return value
 
     @classmethod
     def _format_files(cls, files):

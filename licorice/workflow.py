@@ -1,10 +1,7 @@
 
 import os, sys
 
-from licorice import logger
-from licorice import helper
-from licorice import parser
-from licorice import loaders
+from licorice import helper, loaders, logger, parser, problems
 
 ### GET LICENSE PARSER ###
 
@@ -14,6 +11,9 @@ def get_license_parser(path, vague):
     try:
         parser = loaders.MainLicenseLoader().get_license_parser(vague)
         logger.debug('Keywords selected: {}'.format(' '.join(parser.file_locations.keys())))
+        for lic in [l for l in parser.licenses if l.configured]:
+            logger.debug('{}: {} {} {} {}'.format(lic.name, lic.freedoms, lic.obligations,\
+                lic.restrictions, lic.compatibility))
     except OSError as e:
         logger.error("Loading licenses failed with this error: {0}".format(str(e)))
         sys.exit(1)
@@ -22,6 +22,9 @@ def get_license_parser(path, vague):
 ### GET PROJECT ###
 
 def get_project(paths):
+    if not paths:
+        logger.error("You must specify files to be analysed")
+        sys.exit(1)
     project = None
     try:
         logger.info("Loading project")
@@ -43,6 +46,11 @@ def get_projects_licenses(parser, filelist):
             logger.error("Error reading {}".format(f.path))
         licenses_found |= set(f.licenses)
     return licenses_found
+
+def detect_problems(project):
+    logger.debug('Detecting problems...')
+    problems.ProblemAnalyzer(project).detect()
+
 
 def display_results(args, project):
     # Display results
