@@ -19,7 +19,7 @@ class FileInProject:
         self.filename = os.path.basename(path)
         self.extension = os.path.splitext(self.filename)
         self.licenses = licenses
-        self.skip = False
+        self.error_reading = False
 
     def is_archive(self):
         return self.extension in { '.bz2', '.gz', '.tar', '.jar', '.war', '.zip' }

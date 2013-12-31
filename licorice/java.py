@@ -34,6 +34,12 @@ class JavaHelper():
         return string
 
     @classmethod
-    def get_grupid_artifactid_from_maven(cls, string):
-        pass
+    def minimize_import_set(cls, imports):
+        result = list(imports)
+        for i in result:
+            for j in result:
+                if i == j: continue
+                if j.startswith(i):
+                    result.remove(j)
+        return result
 

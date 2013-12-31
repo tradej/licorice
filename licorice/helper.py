@@ -1,6 +1,7 @@
 
 import re
 import os
+import hashlib
 
 def tokenize(line, with_newline=False):
     ''' Split a line to a list of lowercase strings '''
@@ -28,3 +29,15 @@ def split_paths(paths):
 def path(path):
     ''' Get full path of a file with everything expanded '''
     return os.path.abspath(os.path.expandvars(os.path.expanduser(path)))
+
+def md5(path):
+    md5 = hashlib.md5()
+
+    with open(path, 'rb') as fh:
+        while True:
+            data = fh.read(8192)
+            if not data:
+                break
+            md5.update(data)
+        return md5.hexdigest()
+

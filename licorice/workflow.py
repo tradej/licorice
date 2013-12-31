@@ -43,6 +43,7 @@ def get_projects_licenses(parser, filelist):
         try:
             f.licenses = parser.get_licenses(f.path)
         except UnicodeDecodeError:
+            f.error_reading = True
             logger.error("Error reading {}".format(f.path))
         licenses_found |= set(f.licenses)
     return licenses_found
@@ -67,3 +68,7 @@ def display_results(args, project):
                 print('{}:'.format(pfile.path),
                         splitter.join(sorted(lic.name for lic in pfile.licenses)))
     print(splitter.join(sorted(lic.name for lic in project.licenses)))
+
+def process_java_project(project):
+    pass
+

@@ -28,6 +28,10 @@ class ProblemAnalyzer:
         return (len(self.project.licenses) > 1, 'Found more than 1 license: {}'.format(\
                 ', '.join([l.name for l in self.project.licenses])))
 
+    def problem_files_with_errors(self):
+        errors = [f.error_reading for f in project.files if f.error.reading]
+        return (bool(len(errors)), 'Found {} files that could not be read'.format(len(errors)))
+
     def problem_no_main_license_file(self):
         return (not bool(self._get_main_licenses()), 'No main license file found')
 
