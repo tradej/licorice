@@ -18,14 +18,13 @@ class Server:
         return dictionary
 
     @classmethod
-    def get_licenses(cls, full_path):
+    def _get_license_shortnames(cls, full_path):
         filename = os.path.basename(full_path)
         hashsum = helper.md5(full_path)
         size = os.path.getsize(full_path)
         dictionary = cls._get_file(filename)
 
         for entry in dictionary:
-            print(size, entry['fields']['size'])
             if hashsum == entry['fields']['hashsum']:
                 result = entry['fields']['license']
                 return result, cls.HASHSUM
@@ -35,3 +34,14 @@ class Server:
             if filename == entry['fields']['filename']:
                 result = entry['fields']['license']
                 return result, cls.NAME
+
+    @classmethod
+    def get_licenses(cls, full_path, licenses):
+        result = list()
+        shortnames, method = cls._get_license_shortnames(full_path)
+        for shortname in shortnames:
+            for license in licenses:
+                if shortname == license.short_name:
+                    result.append(license)
+                    break
+        return result

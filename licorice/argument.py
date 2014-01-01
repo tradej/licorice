@@ -24,6 +24,8 @@ def construct_argparser():
                             action='store_true', help='attempt to detect problems with licensing')
     arg_parser.add_argument('-o', '--one-line', required=False,
                             action='store_true', help='print one license per line')
+    arg_parser.add_argument('-q', '--query-online', required=False,
+                            action='store_true', help='try obtaining licensing info from online database')
     arg_parser.add_argument('-u', '--skip-unknown', required=False,
                             action='store_true', help='when outputting, skip files with unknown licenses')
     arg_parser.add_argument('-V', '--vague', required=False,

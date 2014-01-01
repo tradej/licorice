@@ -1,7 +1,7 @@
 
 import os, sys
 
-from licorice import helper, loaders, logger, parser, problems
+from licorice import helper, loaders, logger, online, parser, problems
 
 ### GET LICENSE PARSER ###
 
@@ -36,15 +36,22 @@ def get_project(paths):
         logger.error("Loading project failed with this error: {0}".format(str(e)))
         sys.exit(1)
 
-def get_projects_licenses(parser, filelist):
+def get_projects_licenses(args, parser, filelist):
     licenses_found = set()
     for f in filelist:
         logger.info("Processing {}".format(f.path))
-        try:
-            f.licenses = parser.get_licenses(f.path)
-        except UnicodeDecodeError:
-            f.error_reading = True
-            logger.error("Error reading {}".format(f.path))
+        if args.query_online and f.error_unpacking:
+            try:
+                f.licenses = online.Server.get_licenses(f.filename, parser.licenses)
+                logger.debug(f.licenses)
+            except Exception as e:
+                logger.error('Can not connect to server: {}'.format(e))
+        else:
+            try:
+                f.licenses = parser.get_licenses(f.path)
+            except UnicodeDecodeError:
+                f.error_reading = True
+                logger.error("Error reading {}".format(f.path))
         licenses_found |= set(f.licenses)
     return licenses_found
 

@@ -77,14 +77,20 @@ class ProjectLoader:
         os.chdir(tmpdir)
 
         # Extract file based on the extension
-        subprocess.call({
-            '.bz2' : ["tar", "xjf", path],
-            '.gz'  : ["tar", "xzf", path],
-            '.jar' : ["jar", "xf", path],
-            '.tar' : ["tar", "xf", path],
-            '.war' : ["jar", "xf", path],
-            '.zip' : ["unzip", '-f', path],
-        }[os.path.splitext(path)[1]], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        try:
+            subprocess.call({
+                '.bz2' : ["tar", "xjf", path],
+                '.gz'  : ["tar", "xzf", path],
+                '.jar' : ["jar", "xf", path],
+                '.tar' : ["tar", "xf", path],
+                '.war' : ["jar", "xf", path],
+                '.zip' : ["unzip", '-f', path],
+            }[os.path.splitext(path)[1]], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        except:
+            result = FileInProject(path)
+            result.error_unpacking = True
+            os.chdir(working_directory)
+            return set([result])
 
         os.chdir(working_directory)
         return ProjectLoader.load_directory(path + '-unpacked')
