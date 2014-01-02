@@ -5,4 +5,4 @@ LINE_LIMIT      = 1000
 
 ONLINE_HOST     = 'localhost'
 ONLINE_PORT     = 8000
-ONLINE_URL      = '/server/json/{}/'
+ONLINE_URL      = '/json/{}/'

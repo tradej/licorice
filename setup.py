@@ -17,7 +17,7 @@ setup(
     packages = ['licorice'],
     include_package_data = True,
     entry_points = {'console_scripts':['licorice=licorice.bin:run']},
-    install_requires=[],
+    install_requires=['simplejson'],
     setup_requires = [],
     classifiers = [ 'Environment :: Console',
                    'Intended Audience :: Developers',
