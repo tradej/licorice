@@ -11,12 +11,10 @@ def get_license_parser(path, vague):
     try:
         parser = loaders.MainLicenseLoader().get_license_parser(vague)
         logger.debug('Keywords selected: {}'.format(' '.join(parser.file_locations.keys())))
-        for lic in [l for l in parser.licenses if l.configured]:
-            logger.debug('{}: {} {} {} {}'.format(lic.name, lic.freedoms, lic.obligations,\
-                lic.restrictions, lic.compatibility))
     except OSError as e:
         logger.error("Loading licenses failed with this error: {0}".format(str(e)))
         sys.exit(1)
+    logger.debug([f.short_name for f in parser.licenses])
     return parser
 
 ### GET PROJECT ###
@@ -39,15 +37,15 @@ def get_project(paths):
 def get_projects_licenses(args, parser, filelist):
     licenses_found = set()
     for f in filelist:
-        logger.info("Processing {}".format(f.path))
         if args.query_online and f.error_unpacking:
             try:
-                f.licenses = online.Server.get_licenses(f.filename, parser.licenses)
-                logger.debug(f.licenses)
+                logger.info('Querying online {}'.format(f.path))
+                f.licenses = online.Query.get_licenses(f.path, parser.licenses)
             except Exception as e:
-                logger.error('Can not connect to server: {}'.format(e))
+                logger.error('Can not connect to server {}'.format(str(e)))
         else:
             try:
+                logger.info("Processing {}".format(f.path))
                 f.licenses = parser.get_licenses(f.path)
             except UnicodeDecodeError:
                 f.error_reading = True
@@ -79,3 +77,8 @@ def display_results(args, project):
 def process_java_project(project):
     pass
 
+def upload_archive_data(project):
+#    uploader = online.Uploader()
+#    for f in [f in project.files if f.is_archive]:
+#        uploader.upload(f)
+    pass

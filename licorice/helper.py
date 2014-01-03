@@ -30,14 +30,17 @@ def path(path):
     ''' Get full path of a file with everything expanded '''
     return os.path.abspath(os.path.expandvars(os.path.expanduser(path)))
 
-def md5(path):
-    md5 = hashlib.md5()
+def hashsum(path):
+    sha1 = hashlib.sha1()
 
     with open(path, 'rb') as fh:
         while True:
             data = fh.read(8192)
             if not data:
                 break
-            md5.update(data)
-        return md5.hexdigest()
+            sha1.update(data)
+        return sha1.hexdigest()
+
+def prepend_cwd(path):
+    return os.path.join(os.path.dirname(__file__), path)
 

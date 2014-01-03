@@ -4,6 +4,7 @@ import os
 import re
 
 from licorice.helper import tokenize
+from licorice import config
 
 class Project:
     ''' Project holding all files and their licenses '''
@@ -22,15 +23,16 @@ class FileInProject:
         self.error_reading = False
         self.error_unpacking = False
 
+    @property
     def is_archive(self):
-        return self.extension in { '.bz2', '.gz', '.tar', '.jar', '.war', '.zip' }
+        return self.extension in config.ARCHIVE_EXT
 
 class License:
     def __init__(self, name, configured, files, vague_words=list(), \
             freedoms=dict(), obligations=dict(), restrictions=dict(),\
             compatibility=dict(), short_name=None):
         self.name = name
-        self.short_name = short_name
+        self.short_name = short_name if short_name else name.lower()
         self.configured = configured
         self.files = files
         self.cachedfiles = [CachedFile(f, parent=self) for f in self.files]

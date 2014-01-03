@@ -1,26 +1,28 @@
 
-from http.client import HTTPConnection
+from urllib import request
+from urllib.parse import urlencode
+from http.cookiejar import CookieJar
+from lxml import html
 import simplejson
 import os
 
 from licorice import config, helper
 
-class Server:
+class Query:
     # Matching methods
     HASHSUM, SIZE, NAME = range(3)
 
     @classmethod
     def _get_file(cls, filename):
-        conn = HTTPConnection(config.ONLINE_HOST, port=config.ONLINE_PORT)
-        conn.request('GET', config.ONLINE_URL.format(filename))
-        val = conn.getresponse().read()
-        dictionary = simplejson.loads(val.decode('utf-8'))
+        url = config.ONLINE_FILE_URL.format(filename)
+        response = request.urlopen(url).read()
+        dictionary = simplejson.loads(response.decode('utf-8'))
         return dictionary
 
     @classmethod
     def _get_license_shortnames(cls, full_path):
         filename = os.path.basename(full_path)
-        hashsum = helper.md5(full_path)
+        hashsum = helper.hashsum(full_path)
         size = os.path.getsize(full_path)
         dictionary = cls._get_file(filename)
 
@@ -34,6 +36,7 @@ class Server:
             if filename == entry['fields']['filename']:
                 result = entry['fields']['license']
                 return result, cls.NAME
+        return [], None
 
     @classmethod
     def get_licenses(cls, full_path, licenses):
@@ -45,3 +48,43 @@ class Server:
                     result.append(license)
                     break
         return result
+
+class Uploader:
+
+    def __init__(self):
+        self.login_url = config.ONLINE_LOGIN_URL
+        self.add_url = config.ONLINE_ADD_URL
+        self.opener = self._get_opener()
+        self.logged_in = False
+
+    def _get_opener(self):
+        cj = CookieJar()
+        return request.build_opener(request.HTTPCookieProcessor(cj),
+                request.HTTPHandler(debuglevel=1))
+
+    def _get_csrf_token(self, string):
+        return html.fromstring(string).xpath(\
+                '//input[@name="csrfmiddlewaretoken"]/@value')[0]
+
+    def login(self, username, password):
+        csrf_token = self._get_csrf_token(self.opener.open(self.login_url))
+        values = {'login': username, 'password': password, \
+                'csrfmiddlewaretoken': csrf_token}
+        params = urlencode(values).encode('utf-8')
+        self.opener.open(self.login_url)
+        self.logged_in = True
+
+    def upload(self, pfile):
+        if not self.logged_in: self.login()
+        csrf_token = self._get_csrf_token(self.opener.open(self.add_url))
+        values = {
+                'filename': pfile.filename,
+                'size': os.path.getsize(pfile.path),
+                'hashsum': helper.hashsum(pfile.path),
+                'license': [l.shortname for l in pfile.licenses],
+                'comment': 'Uploaded with licorice',
+                'csrfmiddlewaretoken': csrf_token}
+
+        params = urlencode(values).encode('utf-8')
+        self.opener.open(self.add_url)
+        self.logged_in = True

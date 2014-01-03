@@ -81,10 +81,12 @@ class ProjectLoader:
             subprocess.call({
                 '.bz2' : ["tar", "xjf", path],
                 '.gz'  : ["tar", "xzf", path],
+                '.xz'  : ["tar", "xJf", path],
                 '.jar' : ["jar", "xf", path],
                 '.tar' : ["tar", "xf", path],
+                '.rar' : ["unrar", "e", path],
                 '.war' : ["jar", "xf", path],
-                '.zip' : ["unzip", '-f', path],
+                '.zip' : ["unzip", '', path],
             }[os.path.splitext(path)[1]], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         except:
             result = FileInProject(path)
@@ -97,8 +99,7 @@ class ProjectLoader:
 
     @staticmethod
     def is_archive(path):
-        # TODO Code duplication with FileInProject
-        return os.path.splitext(path)[1] in { '.bz2', '.gz', '.tar', '.jar', '.war', '.zip' }
+        return os.path.splitext(path)[1] in config.ARCHIVE_EXT
 
 class MainLicenseLoader:
 
@@ -106,8 +107,9 @@ class MainLicenseLoader:
         '''Get license parser with definitions obtained from a given directory
         :param path: License definitions directory
         '''
-        conf_path = helper.path(get_dir(config.METADATA_DIR))
-        text_path = helper.path(get_dir(config.DEFINITIONS_DIR))
+        conf_path = helper.path(get_dir(helper.prepend_cwd(config.METADATA_DIR)))
+        text_path = helper.path(get_dir(helper.prepend_cwd(config.DEFINITIONS_DIR)))
+
         (licenses, keywords) = self.get_all_licenses_and_keywords(conf_path, text_path)
         logger.info('Loaded {} licenses'.format(len(licenses)))
         return LicenseParser(keywords, licenses, vague)
