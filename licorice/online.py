@@ -6,7 +6,7 @@ from lxml import html
 import simplejson
 import os
 
-from licorice import config, helper
+from licorice import config, helper, models
 
 class Query:
     # Matching methods
@@ -20,34 +20,46 @@ class Query:
         return dictionary
 
     @classmethod
-    def _get_license_shortnames(cls, full_path):
+    def _get_query(cls, full_path):
         filename = os.path.basename(full_path)
         hashsum = helper.hashsum(full_path)
         size = os.path.getsize(full_path)
         dictionary = cls._get_file(filename)
 
+        # Three separate loops to ensure the ordering of matches
         for entry in dictionary:
             if hashsum == entry['fields']['hashsum']:
-                result = entry['fields']['license']
-                return result, cls.HASHSUM
+                return cls._form_query_result(entry['fields'], cls.HASHSUM)
+        for entry in dictionary:
             if size == entry['fields']['size']:
-                result = entry['fields']['license']
-                return result, cls.SIZE
+                return cls._form_query_result(entry['fields'], cls.SIZE)
+        for entry in dictionary:
             if filename == entry['fields']['filename']:
-                result = entry['fields']['license']
-                return result, cls.NAME
-        return [], None
+                return cls._form_query_result(entry['fields'], cls.NAME)
+        return None
+
+    def _form_query_result(dictionary, method):
+        return models.QueryResult(\
+                dictionary['filename'],
+                method,
+                dictionary['license'],
+                dictionary['submitter'],
+                dictionary['url'],
+                dictionary['comment'],
+                dictionary['upvotes'],
+                dictionary['downvotes'])
 
     @classmethod
     def get_licenses(cls, full_path, licenses):
-        result = list()
-        shortnames, method = cls._get_license_shortnames(full_path)
-        for shortname in shortnames:
+        result = set()
+        query = cls._get_query(full_path)
+        for shortname in query.licenses:
             for license in licenses:
                 if shortname == license.short_name:
-                    result.append(license)
+                    result.add(license)
                     break
-        return result
+        query.licenses = result
+        return query
 
 class Uploader:
 

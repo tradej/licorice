@@ -8,11 +8,11 @@ from licorice import config
 
 class Project:
     ''' Project holding all files and their licenses '''
-    def __init__(self, name, files):
+    def __init__(self, name, files, result=None):
         self.licenses = None
         self.name = name
         self.files = files
-        self.license_file = None
+        self.online_result = result
 
 class FileInProject:
     def __init__(self, path, licenses = []):
@@ -185,3 +185,19 @@ class ForwardFileGenerator:
     def get_words(self):
         for word, line_index, word_index in self.get_words_with_coordinates():
             yield word
+
+class QueryResult:
+
+    def __init__(self, filename, method, licenses, submitter, url='', comment='', upvotes=0, downvotes=0):
+        self.filename = filename
+        self.matching_method = method
+        self.licenses = licenses
+        self.submitter = submitter
+        self.url = url
+        self.comment = comment
+        self.upvotes = upvotes
+        self.downvotes = downvotes
+
+    @property
+    def score(self):
+        return self.upvotes - self.downvotes

@@ -36,11 +36,14 @@ def get_project(paths):
 
 def get_projects_licenses(args, parser, filelist):
     licenses_found = set()
+    queried_online = dict()
     for f in filelist:
         if args.query_online and f.error_unpacking:
             try:
                 logger.info('Querying online {}'.format(f.path))
-                f.licenses = online.Query.get_licenses(f.path, parser.licenses)
+                query = online.Query.query(f.path, parser.licenses)
+                f.licenses = query.licenses
+                queried_online[f] = query
             except Exception as e:
                 logger.error('Can not connect to server {}'.format(str(e)))
         else:
@@ -51,7 +54,7 @@ def get_projects_licenses(args, parser, filelist):
                 f.error_reading = True
                 logger.error("Error reading {}".format(f.path))
         licenses_found |= set(f.licenses)
-    return licenses_found
+    return licenses_found, queried_online
 
 def detect_problems(project):
     logger.debug('Detecting problems...')
@@ -73,6 +76,12 @@ def display_results(args, project):
                 print('{}:'.format(pfile.path),
                         splitter.join(sorted(lic.name for lic in pfile.licenses)))
     print(splitter.join(sorted(lic.name for lic in project.licenses)))
+
+    if project.online_result:
+        print('\nInformation obtained online:')
+        for query in project.online_result:
+            print('{}: {} ({} upvotes / {} downvotes)'.format(query.filename,
+                ', '.join(query.licenses), query.upvotes, query.downvotes))
 
 def process_java_project(project):
     pass
