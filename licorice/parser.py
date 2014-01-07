@@ -42,6 +42,7 @@ class LicenseParser:
                     if f.parent in matches:
                         continue
                     if self._matches(path, f, line_number, word_index, word):
+                        logger.debug('Found {}'.format(f.parent.name))
                         matches.append(f.parent)
 
         return list(sorted(matches, key=lambda l: l.name))

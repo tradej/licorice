@@ -16,8 +16,8 @@ def run():
     parser = workflow.get_license_parser(get_dir(config.DEFINITIONS_DIR), vague=args.vague)
     project = workflow.get_project(args.file_list)
 
-    project.licenses = workflow.get_projects_licenses(args, parser, project.files)
-    logger.debug('Found licenses: {}'.format(', '.join([l.name for l in project.licenses])))
+    project.licenses, project.online_result = workflow.get_projects_licenses(args, parser, project.files)
+    logger.info('Found licenses: {}'.format(', '.join([l.name for l in project.licenses])))
     workflow.display_results(args, project)
 
     if args.detect_problems:
