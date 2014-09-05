@@ -1,7 +1,7 @@
 
 import os, sys
 
-from licorice import helper, loaders, logger, online, parser, problems
+from licorice import helper, loaders, logger, parser, problems, java
 
 ### GET LICENSE PARSER ###
 
@@ -38,23 +38,23 @@ def get_projects_licenses(args, parser, filelist):
     licenses_found = set()
     queried_online = dict()
     for f in filelist:
-        if args.query_online and f.error_unpacking:
-            try:
-                logger.info('Querying online {}'.format(f.path))
-                query = online.Query.query(f.path, parser.licenses)
-                f.licenses = query.licenses
-                queried_online[f] = query
-            except Exception as e:
-                logger.error('Can not connect to server {}'.format(str(e)))
-        else:
-            try:
-                logger.info("Processing {}".format(f.path))
-                f.licenses = parser.get_licenses(f.path)
-            except UnicodeDecodeError:
-                f.error_reading = True
-                logger.error("Error reading {}".format(f.path))
+        if f.is_archive: continue
+        try:
+            logger.info("Processing {}".format(f.path))
+            f.licenses = parser.get_licenses(f.path)
+        except UnicodeDecodeError:
+            f.error_reading = True
+            logger.error("Error reading {}".format(f.path))
         licenses_found |= set(f.licenses)
-    return licenses_found, queried_online
+
+    # Adding licenses to archives
+    for f in [f for f in filelist if f.is_archive]:
+        f.licenses = set()
+        for licenses in [g.licenses for g in filelist if g.path.startswith(f.path)]:
+            f.licenses |= set(licenses)
+
+    return licenses_found
+
 
 def detect_problems(project):
     logger.debug('Detecting problems...')
@@ -77,6 +77,7 @@ def display_results(args, project):
                         splitter.join(sorted(lic.name for lic in pfile.licenses)))
     print(splitter.join(sorted(lic.name for lic in project.licenses)))
 
+<<<<<<< HEAD
     if project.online_result:
         print('\nInformation obtained online:')
         for query in project.online_result:
@@ -91,3 +92,5 @@ def upload_archive_data(project):
 #    for f in [f in project.files if f.is_archive]:
 #        uploader.upload(f)
     pass
+=======
+>>>>>>> Merged changes in code from final thesis version

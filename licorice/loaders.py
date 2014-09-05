@@ -95,17 +95,20 @@ class ProjectLoader:
             return set([result])
 
         os.chdir(working_directory)
-        return ProjectLoader.load_directory(path + '-unpacked')
+        result = cls.load_directory(path + '-unpacked')
+        result.add(cls.load_file(path))
+        return result
 
     @staticmethod
     def is_archive(path):
         return os.path.splitext(path)[1] in config.ARCHIVE_EXT
 
 class MainLicenseLoader:
+    '''Class obtaining license definition and configuration'''
 
     def get_license_parser(self, vague=False):
-        '''Get license parser with definitions obtained from a given directory
-        :param path: License definitions directory
+        '''Get an instance of LicenseParser with definitions obtained from a
+        preconfigured directory.
         '''
         conf_path = helper.path(get_dir(helper.prepend_cwd(config.METADATA_DIR)))
         text_path = helper.path(get_dir(helper.prepend_cwd(config.DEFINITIONS_DIR)))
@@ -115,9 +118,10 @@ class MainLicenseLoader:
         return LicenseParser(keywords, licenses, vague)
 
     def get_all_licenses_and_keywords(self, conf_path, text_path):
-        ''' Get a list of licenses and keywords to be searched.
-            keywords is a dictionary in form
-            { 'keyword' : [ its locations ] }
+        '''Get a list of licenses and keywords to be searched.
+        keywords is a dictionary in form { 'keyword' : [ its locations ] }.
+
+        Both licenses with metadata and without metadata are loaded.
         '''
         words_occurrences = defaultdict(lambda: set())
         words_frequencies = defaultdict(lambda: 0)
@@ -141,12 +145,14 @@ class MainLicenseLoader:
         return licenses, keywords
 
     def _load_licenses_from_configs(self, filenames):
+        '''Load licenses from metadata files specified by filenames'''
         result = list()
         for f in filenames:
             result.append(LicenseMetadataLoader.load_license(f))
         return result
 
     def _load_licenses_from_texts(self, filenames):
+        '''Load license texts from files specified by filenames'''
         result = list()
         for f in filenames:
             result.append(LicenseTextLoader.load_license(f))
@@ -159,13 +165,13 @@ class MainLicenseLoader:
             master[keyword] += slave[keyword]
 
     def _select_keywords(self, frequency, occurrences):
+        '''Select keywords based on license texts contents'''
         ordered = reversed(sorted(occurrences.keys(), key=lambda t: \
                     helper.search_score(len(occurrences[t]), frequency[t])))
         # Constructing a set of words covering the whole license set
         covered = set()
         results = list()
         for word in ordered:
-            #print(word, helper.search_score(len(occurrences[word]), frequency[word]))
             if word in ['name', 'public']: continue # Optimization
             newly_covered = occurrences[word]
             if len(covered.union(newly_covered)) > len(covered):
@@ -180,7 +186,6 @@ class SingleLicenseLoader:
     def get_words_from_license(cls, cachedfile):
         '''Get a dictionary of words and their frequencies from a license.
         Proper format: { 'word': frequency }
-        :param filename: Path to the license file
         '''
         words = defaultdict(lambda: 0)
         for word in cachedfile.iterator(0):
@@ -189,12 +194,12 @@ class SingleLicenseLoader:
         return words
 
 class LicenseMetadataLoader:
+    '''Class loading metadata from a license file'''
 
     @classmethod
     def load_license(cls, path):
         cfp = configparser.ConfigParser()
         cfp.read_file(open(helper.path(path)))
-        #print(cfp.sections())
         return License(
                 cfp.get('Metadata', 'name'),\
                 True,\

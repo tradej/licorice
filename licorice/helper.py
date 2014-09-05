@@ -44,3 +44,15 @@ def hashsum(path):
 def prepend_cwd(path):
     return os.path.join(os.path.dirname(__file__), path)
 
+def prepend_cwd(path):
+    '''Prepend the current working directory to a path'''
+    return os.path.join(os.path.dirname(__file__), path)
+
+def get_licenses(short_names, licenses):
+    '''Return a list of licenses specified by their short_names'''
+    result = list()
+    for s in short_names:
+        for l in licenses:
+            if s == l.short_name:
+                result.append(l)
+    return result

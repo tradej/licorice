@@ -8,18 +8,24 @@ from licorice import get_dir, argument, helper, logger, workflow, config
 
 ### ENTRY POINT ###
 def run():
-    args = argument.construct_argparser().parse_args() # Parse arguments
+    # Parse arguments
+    args = argument.construct_argparser().parse_args()
     argument.handle_args(args)
 
-    logger.print_splash() # Header output
+    # Header output
+    logger.print_splash()
 
+    # Main work
     parser = workflow.get_license_parser(get_dir(config.DEFINITIONS_DIR), vague=args.vague)
     project = workflow.get_project(args.file_list)
 
-    project.licenses, project.online_result = workflow.get_projects_licenses(args, parser, project.files)
+    project.licenses = workflow.get_projects_licenses(args, parser, project.files)
     logger.info('Found licenses: {}'.format(', '.join([l.name for l in project.licenses])))
+
+    # Display results
     workflow.display_results(args, project)
 
+    # Detect licensing problems
     if args.detect_problems:
         workflow.detect_problems(project)
 

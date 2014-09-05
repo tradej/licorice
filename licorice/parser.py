@@ -30,7 +30,7 @@ class LicenseParser:
         matches = list() # { (line number, word index): License }
         keywords = self.file_locations.keys()
         for word, line_number, word_index in FFG(path, 0, 0).get_words_with_coordinates():
-            if line_number > config.LINE_LIMIT: break # limiting the portion of the file to be read
+            if config.LINE_LIMIT and line_number > config.LINE_LIMIT: break # limiting the portion of the file to be read
 
             if self.vague:
                 for l in self.licenses_with_vague_words:

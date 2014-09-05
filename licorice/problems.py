@@ -29,8 +29,12 @@ class ProblemAnalyzer:
                 ', '.join([l.name for l in self.project.licenses])))
 
     def problem_files_with_errors(self):
-        errors = [f.error_reading for f in project.files if f.error.reading]
+        errors = [f.error_reading for f in self.project.files if f.error_reading]
         return (bool(len(errors)), 'Found {} files that could not be read'.format(len(errors)))
+
+    def problem_files_with_errors(self):
+        errors = [f.error_unpacking for f in self.project.files if f.error_unpacking]
+        return (bool(len(errors)), 'Found {} archives that could not be unpacked'.format(len(errors)))
 
     def problem_no_main_license_file(self):
         return (not bool(self._get_main_licenses()), 'No main license file found')
@@ -41,7 +45,7 @@ class ProblemAnalyzer:
     def problem_different_licenses_from_main_found(self):
         main_licenses = self._get_main_licenses()
         diff = self.project.licenses.difference(main_licenses)
-        return (bool(diff), 'Found licenses different from the main license: {}'.format(\
+        return (bool(diff and bool(main_licenses)), 'Found licenses different from the main license: {}'.format(\
                 ', '.join([l.name for l in diff])))
 
     def problem_multiple_copyleft_licenses_found(self):
@@ -76,10 +80,10 @@ class ProblemAnalyzer:
                 if result: results.append(comment)
 
         logger.debug('Detected {} problems'.format(len(results)))
-        if len(results) > 0: print('Found problems:')
-        else: print('No problems found.')
+        if len(results) > 0: print('* Found problems: *')
+        else: print('* No problems found. *')
 
-        for comment in results: print('* ', comment)
+        for comment in results: print(' - ', comment)
 
 
 
