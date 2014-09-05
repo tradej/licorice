@@ -77,20 +77,3 @@ def display_results(args, project):
                         splitter.join(sorted(lic.name for lic in pfile.licenses)))
     print(splitter.join(sorted(lic.name for lic in project.licenses)))
 
-<<<<<<< HEAD
-    if project.online_result:
-        print('\nInformation obtained online:')
-        for query in project.online_result:
-            print('{}: {} ({} upvotes / {} downvotes)'.format(query.filename,
-                ', '.join(query.licenses), query.upvotes, query.downvotes))
-
-def process_java_project(project):
-    pass
-
-def upload_archive_data(project):
-#    uploader = online.Uploader()
-#    for f in [f in project.files if f.is_archive]:
-#        uploader.upload(f)
-    pass
-=======
->>>>>>> Merged changes in code from final thesis version
