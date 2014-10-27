@@ -67,6 +67,7 @@ class ProjectLoader:
         :param path: Path to the archive
         :param tmpdir: Directory where to unpack the archive
         '''
+        logger.debug('Extracting archive "{}"'.format(path))
         # TODO Checking if user has writing access + fallback
         if not tmpdir:
             tmpdir = path + '-unpacked'
@@ -78,23 +79,25 @@ class ProjectLoader:
 
         # Extract file based on the extension
         try:
-            subprocess.call({
+            cmdline = {
                 '.bz2' : ["tar", "xjf", path],
                 '.gz'  : ["tar", "xzf", path],
                 '.xz'  : ["tar", "xJf", path],
-                '.jar' : ["jar", "xf", path],
+                '.jar' : ["unzip", "-q", path],
                 '.tar' : ["tar", "xf", path],
                 '.rar' : ["unrar", "e", path],
-                '.war' : ["jar", "xf", path],
-                '.zip' : ["unzip", '', path],
-            }[os.path.splitext(path)[1]], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                '.war' : ["unzip", "-q", path],
+                '.zip' : ["unzip", "-q", path],
+            }[os.path.splitext(path)[1]]
+            logger.debug('Unpacking: {}'.format(cmdline))
+            subprocess.call(cmdline)
         except:
             result = FileInProject(path)
             result.error_unpacking = True
-            os.chdir(working_directory)
             return set([result])
+        finally:
+            os.chdir(working_directory)
 
-        os.chdir(working_directory)
         result = cls.load_directory(path + '-unpacked')
         result.add(cls.load_file(path))
         return result

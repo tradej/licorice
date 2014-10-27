@@ -44,7 +44,7 @@ def get_projects_licenses(args, parser, filelist):
             f.licenses = parser.get_licenses(f.path)
         except UnicodeDecodeError:
             f.error_reading = True
-            logger.error("Error reading {}".format(f.path))
+            logger.info("Error reading {}".format(f.path))
         licenses_found |= set(f.licenses)
 
     # Adding licenses to archives
