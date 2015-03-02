@@ -88,6 +88,7 @@ class ProjectLoader:
                 '.rar' : ["unrar", "e", path],
                 '.war' : ["unzip", "-q", path],
                 '.zip' : ["unzip", "-q", path],
+                '.gem' : ["gem", "unpack", path],
             }[os.path.splitext(path)[1]]
             logger.debug('Unpacking: {}'.format(cmdline))
             subprocess.call(cmdline)
