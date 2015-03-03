@@ -84,7 +84,7 @@ class ProjectLoader:
             if archive_ext in ['.rpm']:
                logger.debug('Unpacking: {}'.format(path))
                rpm2cpio = subprocess.Popen(('rpm2cpio', path), stdout=subprocess.PIPE)
-               output = subprocess.check_output(('cpio', '-idmv'), stdin=rpm2cpio.stdout)
+               output = subprocess.check_output(('cpio', '-idm'), stdin=rpm2cpio.stdout, stderr=subprocess.DEVNULL)
                rpm2cpio.wait()
             else:
                cmdline = {
