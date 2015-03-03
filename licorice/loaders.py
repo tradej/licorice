@@ -77,21 +77,29 @@ class ProjectLoader:
         working_directory = os.getcwd()
         os.chdir(tmpdir)
 
+        archive_ext = os.path.splitext(path)[1]
+
         # Extract file based on the extension
         try:
-            cmdline = {
-                '.bz2' : ["tar", "xjf", path],
-                '.gz'  : ["tar", "xzf", path],
-                '.xz'  : ["tar", "xJf", path],
-                '.jar' : ["unzip", "-q", path],
-                '.tar' : ["tar", "xf", path],
-                '.rar' : ["unrar", "e", path],
-                '.war' : ["unzip", "-q", path],
-                '.zip' : ["unzip", "-q", path],
-                '.gem' : ["gem", "unpack", path],
-            }[os.path.splitext(path)[1]]
-            logger.debug('Unpacking: {}'.format(cmdline))
-            subprocess.call(cmdline)
+            if archive_ext in ['.rpm']:
+               logger.debug('Unpacking: {}'.format(path))
+               rpm2cpio = subprocess.Popen(('rpm2cpio', path), stdout=subprocess.PIPE)
+               output = subprocess.check_output(('cpio', '-idmv'), stdin=rpm2cpio.stdout)
+               rpm2cpio.wait()
+            else:
+               cmdline = {
+                   '.bz2' : ["tar", "xjf", path],
+                   '.gz'  : ["tar", "xzf", path],
+                   '.xz'  : ["tar", "xJf", path],
+                   '.jar' : ["unzip", "-q", path],
+                   '.tar' : ["tar", "xf", path],
+                   '.rar' : ["unrar", "e", path],
+                   '.war' : ["unzip", "-q", path],
+                   '.zip' : ["unzip", "-q", path],
+                   '.gem' : ["gem", "unpack", path],
+               }[archive_ext]
+               logger.debug('Unpacking: {}'.format(cmdline))
+               subprocess.call(cmdline)
         except:
             result = FileInProject(path)
             result.error_unpacking = True
