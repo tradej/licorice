@@ -1,0 +1,9 @@
+This information contains sample application programs in source
+language, which illustrate programming techniques on various operating
+platforms. You may copy, modify, and distribute these sample programs in
+any form without payment to IBM, for the purposes of developing, using,
+marketing or distributing application programs conforming to the
+application programming interface for the operating platform for which
+the sample programs are written. These examples have not been thoroughly
+tested under all conditions. IBM, therefore, cannot guarantee or imply
+reliability, serviceability, or function of these programs.

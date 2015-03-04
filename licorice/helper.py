@@ -21,7 +21,8 @@ def get_word_frequencies(string):
     Get a dictionary of words and their frequencies in a string.
     '''
     result = dict()
-    for word in string.split():
+    words = re.sub('[\W]', ' ', string)
+    for word in words.split():
         if word not in result:
             result[word] = 1
         else:

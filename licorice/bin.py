@@ -1,6 +1,8 @@
 
+import mmap
 import operator
 import os
+import re
 import sys
 
 from collections import defaultdict
@@ -75,42 +77,61 @@ def get_longest_licence(licences):
     return max([len(l.contents) for l in licences])
 
 def analyze_file(path, keywords, licences, lookahead):
-    f = model.LargeFile(path)
+    m = model.MappedFile(path)
 
-    index = 0
-    prev_chunk = ''
-    positions = dict()
-    lic_results = dict()
-    while True:
-        print('chunk read')
-        chunk = f.handle.read(2*lookahead)
-        if not chunk:
-            break
+    found_licences = defaultdict(lambda: 0)
+    for kw in keywords:
+        occurrences = m.occurrences(kw)
+        for occurrence in occurrences:
+            for licence in (l for l in licences if l.contains(kw)):
+                match = 0
+                for l_occurrence in licence.positions(kw):
+                    if occurrence - l_occurrence < 0: # License's prefix is longer than file's prefix
+                        continue
 
-        sanitized = helper.sanitize(chunk).split()
+                    end = len(licence.contents) - l_occurrence
+                    if end > m.length: # License's suffix is longer than the file's length
+                        continue
 
-        # Find keyword position in sanitized chunk
-        for word in sanitized:
-            index += 1
-            if word in keywords:
-                current_licences = licences
-                results = dict()
-                for a in (2,4,10):
-                    cmp_file = ' '.join(helper.get_chunk_from_list(sanitized, index, 2*a))
-                    for lic in current_licences:
-                        max_ratio = 0
-                        for ch in lic.chunks(word, a):
-                            ratio = fuzz.partial_ratio(ch, cmp_file)
-                            if ratio > max_ratio:
-                                max_ratio = ratio
-                        results[lic] = max_ratio
-                    current_licences = [l for l,v in results.items() if v > 70]
-                for l in current_licences:
-                    lic_results[l] = results[l]
+                    bad = False
+                    for offset in [10, 50, 300, end]:
+                        if bad:
+                            break
+                        temp_start = max(l_occurrence - offset, 0)
+                        temp_end = min(l_occurrence + offset, len(licence.contents))
+#                        print('matching', licence.name, temp_start, temp_end)
+                        lic_str = re.sub('[\W]+', ' ', licence.contents[temp_start:temp_end])
+                        try:
+                            matched_str = re.sub('[\W]+', ' ', m.get(occurrence - l_occurrence, occurrence + temp_end))
+                        except UnicodeDecodeError:
+                            print('Error reading {}'.format(m.path))
+                            return
 
-    print('\n'.join(['{name} - {score}'.format(name=l.name, score=v) for (l,v) in lic_results.items() if v > 70]))
+                        match = fuzz.token_set_ratio(lic_str, matched_str)
+                        if match < 95:
+                            bad = True
+                            match = 0
+                            continue
+
+                    if match > found_licences[licence]:
+                        found_licences[licence] = match
+
+#                        print('matched', licence.name)
+#                        print('.', end='')
+#                        match = fuzz.partial_ratio(lic_str, matched_str)
+#                        if match < 90:
+#                            bad = True
+#                            match = 0
+#                            continue
 
 
+    result = [(licence, value) for (licence, value) in found_licences.items() if value > 0]
+    if result:
+        lic_str = ' '.join(('{lic} ({res}%)'.format(lic=l.name, res=match) for (l, match) in result))
+    else:
+        lic_str = 'unknown'
+    print('{file}: {licenses}'.format(file=m.path,
+        licenses=lic_str))
 
 
 def main():
@@ -123,7 +144,5 @@ def main():
     keywords = find_keywords(licences)
     logger.info('Keywords: {list}'.format(list=', '.join(keywords)))
 
-    assign_keyword_positions(keywords, licences)
-
-    print(get_longest_licence(licences))
-    analyze_file(sys.argv[1], keywords, licences, get_longest_licence(licences))
+    for f in sys.argv[1:]:
+        analyze_file(f, keywords, licences, get_longest_licence(licences))
