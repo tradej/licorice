@@ -85,6 +85,7 @@ class ProjectLoader:
                 '.xz'  : ["tar", "xJf", path],
                 '.jar' : ["unzip", "-q", path],
                 '.tar' : ["tar", "xf", path],
+                '.tgz' : ["tar", "xzf", path],
                 '.rar' : ["unrar", "e", path],
                 '.war' : ["unzip", "-q", path],
                 '.zip' : ["unzip", "-q", path],
