@@ -18,4 +18,6 @@ up licences that the previous version didn't.
 If you want to check out the original version of the program, you can find it
 in the 'legacy' branch of this repo (https://www.github.com/tradej/licorice).
 
+This program is distributed under the GNU GPL version 3 or any later version.
+
 Tomas Radej, `<tradej@redhat.com>`

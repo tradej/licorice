@@ -8,13 +8,13 @@ except:
 
 setup(
     name='licorice',
-    version='0.0.1',
-    description='Short description',
+    version='1.0alpha',
+    description='Tool for licensing analysis and reporting',
     long_description=''.join(open('README.rst').readlines()),
-    keywords='some, keywords',
+    keywords='licensing, licence, development',
     author='Tomas Radej',
     author_email='tradej@redhat.com',
-    license='GPLv2',
+    license='GPLv3',
     packages=find_packages(),
     classifiers=[
         'Development Status :: 3 - Alpha',
