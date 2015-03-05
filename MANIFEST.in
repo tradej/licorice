@@ -1,2 +1,2 @@
-recursive-include licorice/data *
-
+include README.rst
+include LICENSE

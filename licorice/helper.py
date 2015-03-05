@@ -1,58 +1,52 @@
 
-import re
 import os
-import hashlib
+import re
 
-def tokenize(line, with_newline=False):
-    ''' Split a line to a list of lowercase strings '''
-    result = [str.lower(word) for word in re.compile(r'[^A-Za-z1-9%]').split(line) if word != '']
-    if with_newline: return result + ['\n']
-    else: return result
+def sanitize(string, to_replace=None):
+    '''
+    Translate special characters to spaces and squash any multiple spaces
+    into one space.
+
+    to_replace: regex to replace with a space. [\W] by default
+
+    returns: lowercase string of non-whitespace chars and spaces
+    '''
+    first_pass = re.sub('[\W]', ' ', string) # Special chars
+    second_pass = re.sub('  +', ' ', first_pass) # Multiple spaces
+    return second_pass.lower().strip()
 
 
-def search_score(no_of_locations, frequency):
-    ''' Return search score of the word based on the wideness of use and
-        frequency '''
-    return float(no_of_locations) ** 2 / frequency
+def get_word_frequencies(string):
+    '''
+    Get a dictionary of words and their frequencies in a string.
+    '''
+    result = dict()
+    words = re.sub('[\W]', ' ', string)
+    for word in words.split():
+        if word not in result:
+            result[word] = 1
+        else:
+            result[word] += 1
 
-def get_files(destination):
-    ''' Get full paths of all regular files in given path and subdirectories '''
-    result = list()
-    for root, dirs, files in os.walk(path(destination)):
-        for f in [os.path.join(root, f) for f in files]:
-            result.append(f)
     return result
 
-def split_paths(paths):
-    return paths.split(' ')
 
-def path(path):
-    ''' Get full path of a file with everything expanded '''
-    return os.path.abspath(os.path.expandvars(os.path.expanduser(path)))
+def load_file_to_str(path):
+    '''
+    Load file to a string and sanitize it.
 
-def hashsum(path):
-    sha1 = hashlib.sha1()
+    path: path to file (variables will be expanded)
+    '''
+    if not os.path.isfile(path):
+        raise IOError('Can not load {path}: not a file'.format(path=path))
 
-    with open(path, 'rb') as fh:
-        while True:
-            data = fh.read(8192)
-            if not data:
-                break
-            sha1.update(data)
-        return sha1.hexdigest()
+    with open(path) as fh:
+        contents = fh.read()
 
-def prepend_cwd(path):
-    return os.path.join(os.path.dirname(__file__), path)
+    return sanitize(contents)
 
-def prepend_cwd(path):
-    '''Prepend the current working directory to a path'''
-    return os.path.join(os.path.dirname(__file__), path)
 
-def get_licenses(short_names, licenses):
-    '''Return a list of licenses specified by their short_names'''
-    result = list()
-    for s in short_names:
-        for l in licenses:
-            if s == l.short_name:
-                result.append(l)
-    return result
+def get_chunk_from_list(words, index, offset):
+    beginning = max(0, index-offset)
+    end = min(index+offset, len(words))
+    return words[beginning:end]
