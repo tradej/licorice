@@ -1,7 +1,10 @@
 LICORICE
 ========
 
-Licensing scanner and analyser (and my thesis)
+Licensing scanner and analyser (and my thesis).
+
+This is the legacy version of the program, the new version can be found in the
+master branch.
 
 Licensing
 =========
