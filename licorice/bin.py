@@ -94,7 +94,7 @@ def analyze_file(path, keywords, licences, lookahead):
                         continue
 
                     bad = False
-                    for offset in [10, 50, 300, end]:
+                    for offset in [15, 30, 200, end]:
                         if bad:
                             break
                         temp_start = max(l_occurrence - offset, 0)
