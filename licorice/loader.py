@@ -17,7 +17,7 @@ def get_paths(path_list):
             continue
 
         # Ignored files
-        if os.path.basename(path) in settings.IGNORED_FILES:
+        if helper.is_ignored(path):
             ignored.append(path)
             continue
 
@@ -31,19 +31,19 @@ def get_paths(path_list):
 
         # Directories
         if os.path.isdir(path):
-            for root, dirs, files in os.walk(path):
-                results = get_paths([os.path.join(root, f) for f in files])
-                nonexistent.extend(results['nonexistent'])
-                archives.extend(results['archives'])
-                ready.extend(results['ready'])
-                errors.extend(results['errors'])
-                ignored.extend(results['ignored'])
+            results = get_paths([os.path.join(path, f) for f in os.listdir(path)])
+
+            nonexistent.extend(results['nonexistent'])
+            archives.extend(results['archives'])
+            ready.extend(results['ready'])
+            errors.extend(results['errors'])
+            ignored.extend(results['ignored'])
+
             continue
 
         # Block specials, devices, named pipes etc.
-        else:
-            errors.append(path)
-            continue
+        errors.append(path)
+        continue
 
     return {'ready': ready, 'nonexistent': nonexistent, 'archives': archives, 'errors': errors, 'ignored': ignored}
 

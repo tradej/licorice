@@ -7,7 +7,7 @@ import sys
 
 from collections import defaultdict
 from fuzzywuzzy import fuzz
-from licorice import args, helper, loader, matcher, model, settings
+from licorice import args, exceptions, helper, loader, matcher, model, settings
 from licorice.logging import logger
 
 def load_licences(path=settings.LICENSE_TEXTS_PATH):
@@ -96,8 +96,9 @@ def main():
     for pf in projectfiles:
         try:
             pf.open()
+            logger.debug('Processing {path} ({len} bytes)'.format(path=pf.path, len=pf.length))
             found_licences = licencematcher.get_licences(pf)
-        except Exception as e:
+        except exceptions.RunTimeException as e:
             logger.error(str(e))
         finally:
             pf.close()
