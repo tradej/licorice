@@ -81,11 +81,9 @@ class MappedFile(object):
         '''
         Get an iterator over positions of a keyword in file
         '''
-        if not self.is_open:
-            raise exceptions.RunTimeError('File is not open')
         if isinstance(keyword, str):
             keyword = keyword.encode('utf-8')
-        return (match.start() for match in re.finditer(keyword, self._mmap))
+        return (match.start() for match in re.finditer(keyword, self._mmap, re.IGNORECASE))
 
     def get(self, start, end, tokenized=False):
         if (start, end, tokenized) not in self._chunk_cache:

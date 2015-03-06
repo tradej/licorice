@@ -13,7 +13,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 # Paths
-LICENSE_TEXTS_PATH = 'data/licenses/texts'
+LICENSE_TEXTS_PATH = 'data/licences/texts'
 ARCHIVE_EXT = { '.bz2', '.gz', '.tar', '.tgz', '.jar', '.war', '.zip', '.gem', '.xz' }
 IGNORED_FILES = { '.git', '*.pyc' }
 
