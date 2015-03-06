@@ -1,2 +1,4 @@
 include README.rst
-include LICENSE
+include LICENCE
+
+recursive-include data *
