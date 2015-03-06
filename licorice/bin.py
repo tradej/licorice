@@ -7,7 +7,7 @@ import sys
 
 from collections import defaultdict
 from fuzzywuzzy import fuzz
-from licorice import helper, model, settings
+from licorice import args, helper, loader, matcher, model, settings
 from licorice.logging import logger
 
 def load_licences(path=settings.LICENSE_TEXTS_PATH):
@@ -72,77 +72,41 @@ def assign_keyword_positions(keywords, licences):
                 if licence.splitcontents[index] == keyword:
                     licence.keyword_positions[keyword].append(index)
 
-
-def get_longest_licence(licences):
-    return max([len(l.contents) for l in licences])
-
-def analyze_file(path, keywords, licences, lookahead):
-    m = model.MappedFile(path)
-
-    found_licences = defaultdict(lambda: 0)
-    for kw in keywords:
-        occurrences = m.occurrences(kw)
-        for occurrence in occurrences:
-            for licence in (l for l in licences if l.contains(kw)):
-                match = 0
-                for l_occurrence in licence.positions(kw):
-                    if occurrence - l_occurrence < 0: # License's prefix is longer than file's prefix
-                        continue
-
-                    end = len(licence.contents) - l_occurrence
-                    if end > m.length: # License's suffix is longer than the file's length
-                        continue
-
-                    bad = False
-                    for offset in [15, 30, 200, end]:
-                        if bad:
-                            break
-                        temp_start = max(l_occurrence - offset, 0)
-                        temp_end = min(l_occurrence + offset, len(licence.contents))
-#                        print('matching', licence.name, temp_start, temp_end)
-                        lic_str = re.sub('[\W]+', ' ', licence.contents[temp_start:temp_end])
-                        try:
-                            matched_str = re.sub('[\W]+', ' ', m.get(occurrence - l_occurrence, occurrence + temp_end))
-                        except UnicodeDecodeError:
-                            print('Error reading {}'.format(m.path))
-                            return
-
-                        match = fuzz.token_set_ratio(lic_str, matched_str)
-                        if match < 95:
-                            bad = True
-                            match = 0
-                            continue
-
-                    if match > found_licences[licence]:
-                        found_licences[licence] = match
-
-#                        print('matched', licence.name)
-#                        print('.', end='')
-#                        match = fuzz.partial_ratio(lic_str, matched_str)
-#                        if match < 90:
-#                            bad = True
-#                            match = 0
-#                            continue
-
-
-    result = [(licence, value) for (licence, value) in found_licences.items() if value > 0]
-    if result:
-        lic_str = ' '.join(('{lic} ({res}%)'.format(lic=l.name, res=match) for (l, match) in result))
-    else:
-        lic_str = 'unknown'
-    print('{file}: {licenses}'.format(file=m.path,
-        licenses=lic_str))
-
+def load_files(file_list):
+    return [model.MappedFile(path) for path in loader.get_paths(file_list)['ready']]
 
 def main():
     '''
     Main function
     '''
+    argdict = args.get_arg_parser().parse_args()
+    args.process_args(argdict)
+
     licences = load_licences()
-    logger.info('Loaded {n} licences'.format(n=len(licences)))
+    logger.debug('Loaded {n} licences'.format(n=len(licences)))
 
     keywords = find_keywords(licences)
-    logger.info('Keywords: {list}'.format(list=', '.join(keywords)))
+    logger.debug('Keywords: {list}'.format(list=', '.join(keywords)))
 
-    for f in sys.argv[1:]:
-        analyze_file(f, keywords, licences, get_longest_licence(licences))
+    projectfiles = sorted(load_files(argdict.file_list), key=lambda x: x.path)
+    logger.info('Loaded {n} files'.format(n=len(projectfiles)))
+
+    licencematcher = matcher.LicenceMatcher(licences, keywords)
+
+    for pf in projectfiles:
+        try:
+            pf.open()
+            found_licences = licencematcher.get_licences(pf)
+        except Exception as e:
+            logger.error(str(e))
+        finally:
+            pf.close()
+        if found_licences:
+            formatted_licences = ['{l} ({s}%)'.format(l=lic.name, s=score) for lic, score in found_licences.items()]
+        else:
+            formatted_licences = ['unknown']
+
+        if argdict.skip_unknown and not found_licences:
+            continue
+
+        print('{path}: {licences}'.format(path=pf.path, licences=' '.join(formatted_licences)))
