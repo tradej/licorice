@@ -11,6 +11,7 @@ setup(
     version='1.0alpha',
     description='Tool for licensing analysis and reporting',
     long_description=''.join(open('README.rst').readlines()),
+    install_requires=['fuzzywuzzy'],
     keywords='licensing, licence, development',
     author='Tomas Radej',
     author_email='tradej@redhat.com',
